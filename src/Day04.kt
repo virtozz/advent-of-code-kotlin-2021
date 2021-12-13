@@ -35,7 +35,27 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        val steps = parseSteps(input)
+        val boards = parseBoards(input).toMutableList()
+
+        val allWinners = mutableListOf<Board>()
+
+        for (i in steps.indices) {
+            val remainingSteps = steps.size - i - 1
+            boards.forEach { it.mark(steps[i]) }
+
+            val winners = boards.filter { it.bingo() }
+            if (winners.isNotEmpty()) {
+                allWinners.addAll(winners)
+                boards.removeAll(winners)
+            }
+
+            if (boards.all {it.remaining() > remainingSteps}) {
+                return allWinners.last().score() * steps[i]
+            }
+        }
+
+        return 0
     }
 
     val input = readInput("Day04")
@@ -71,6 +91,10 @@ class Board {
         return this.numbers
             .filter { !this.markedNumbers.contains(it) }
             .sum()
+    }
+
+    fun remaining(): Int {
+        return numbers.size - markedNumbers.size
     }
 
     private fun bingoRows(): Boolean {
